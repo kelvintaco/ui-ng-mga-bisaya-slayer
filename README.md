@@ -1,4 +1,4 @@
-# ui-ng-mga-bisya-slayer
+# ui-ng-mga-bisaya-slayer
 chicboi si denver
 
 
