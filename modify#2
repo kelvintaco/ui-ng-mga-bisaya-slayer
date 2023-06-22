@@ -1,0 +1,508 @@
+import mysql.connector
+from mysql.connector import Error
+from tkinter import messagebox
+import tkinter 
+from datetime import datetime
+from tkinter import ttk
+from datetime import datetime
+
+
+mastertk = tkinter.Tk()
+mastertk.title('Main Window')
+mastertk.geometry('650x200')
+#grids
+mastertk.columnconfigure((1,3), weight = 7)
+mastertk.columnconfigure((0,4), weight = 3)
+mastertk.columnconfigure(2, weight = 1)
+mastertk.rowconfigure((0,1), weight = 2)
+mastertk.rowconfigure(2, weight = 1)
+
+def employeeWindow():
+    empwind = tkinter.Tk()
+    empwind.geometry('900x600')
+    empwind.title('Employee Window')
+    mastertk.withdraw()
+
+    company = tkinter.Label(empwind, text = 'Company Attendance System')
+    company.grid(row=0, column=1, padx=10, pady=0)
+
+    employeeID = tkinter.Label(empwind, text = 'Employee ID')
+    employeeID.grid(row=1, column=1, padx=10, pady=0)
+
+    empEntry = tkinter.Entry(empwind,)
+    empEntry.grid(row=2, column=1, padx=10, pady=0)
+
+    def timein1(empid_value, current_time, current_day):
+        try:
+            con = mysql.connector.connect(host='localhost', port='3306', database='db_empdb', user='root', password='')
+            cursor = con.cursor()
+
+            query = "INSERT INTO tbl_timein(emp_id, time_of_time_in, date_of_time_in) VALUES (%s, %s, %s)"
+            cursor.execute(query, (empid_value, current_time, current_day,))
+            con.commit()
+            #pang verify
+            query = "SELECT emp_id FROM tbl_employee WHERE emp_id = %s"
+            cursor.execute(query, (empid_value,))
+            result = cursor.fetchone()
+
+            if result:
+                messagebox.showinfo("Success", "Timed in successfully!")
+            else:
+                messagebox.showerror("Failed", "Employee ID not found!")
+
+        except Error as err:
+            if err.errno == mysql.connector.errorcode.ER_NO_SUCH_TABLE:
+                messagebox.showerror("Failed", "Employee ID not found!")
+            else:
+                messagebox.showerror("Failed", "Invalid Employee ID! Please enter a numeric ID.")
+        finally:
+                if con.is_connected():
+                    con.close()
+                    print("Connection Closed.")
+
+    def inout():
+        empid_value = empEntry.get()
+        current_time = datetime.now()
+        current_day = datetime.today()
+        timein1(empid_value, current_time, current_day)
+
+    timeIn = tkinter.Button(empwind, text = 'Time In', command=inout)
+    timeIn.grid(row=3, column=1, columnspan=1, padx=10, pady=0)
+    
+    #function ng time out part na to
+    def timeout1(empid_value, current_time, current_day):
+        try:
+            con = mysql.connector.connect(host='localhost', port='3306', database='db_empdb', user='root', password='')
+            cursor = con.cursor()
+
+            query = "INSERT INTO tbl_timeout(emp_id, time_of_time_out, date_of_time_out) VALUES (%s, %s, %s)"
+            cursor.execute(query, (empid_value, current_time, current_day,))
+            con.commit()
+
+            query = "SELECT emp_id FROM tbl_employee WHERE emp_id = %s"
+            cursor.execute(query, (empid_value,))
+            result = cursor.fetchone()
+
+            if result:
+                messagebox.showinfo("Success", "Timed out successfully!")
+            else:
+                messagebox.showerror("Failed", "Employee ID not found!")
+
+        except Error as err:
+            if err.errno == mysql.connector.errorcode.ER_NO_SUCH_TABLE:
+                messagebox.showerror("Failed", "Employee ID not found!")
+            else:
+                messagebox.showerror("Failed", "Invalid Employee ID! Please enter a numeric ID.")
+        finally:
+                if con.is_connected():
+                    con.close()
+                    print("Connection Closed.")
+
+    def inout1():
+        empid_value = empEntry.get()
+        current_time = datetime.now()
+        current_day = datetime.today()
+        timeout1(empid_value, current_time, current_day)
+
+    timeOut = tkinter.Button(empwind, text = 'Time Out', command=inout1)
+    timeOut.grid(row=4, column=1, padx=10, pady=0)
+
+    leaveForm = tkinter.Button(empwind, text = 'Leave Form', command=leave_form).grid(row=6, column=1, padx=10, pady=0)
+
+    def fromemp():
+        empwind.destroy()
+        mastertk.deiconify()
+
+    backemp = tkinter.Button(empwind, text="Back", command=fromemp).grid(row=7, column=1, padx=0, pady=0)
+
+    def close_window():
+        confirmed = messagebox.askyesno("Exit", "Are you sure you want to close the application?")
+        if confirmed:
+            empwind.destroy()
+            mastertk.destroy()
+
+    empwind.protocol("WM_DELETE_WINDOW", close_window)
+
+    empwind.rowconfigure(0, weight=1)
+    empwind.rowconfigure(1, weight=1)
+    empwind.rowconfigure(2, weight=1)
+    empwind.rowconfigure(3, weight=1)
+    empwind.rowconfigure(4, weight=1)
+    empwind.rowconfigure(5, weight=1)
+    empwind.columnconfigure(0, weight=1)
+    empwind.columnconfigure(1, weight=1)
+    empwind.columnconfigure(2, weight=1)
+
+def leave_form():
+    lftk = tkinter.Tk()
+    lftk.title('Leave Form')
+    lftk.geometry('600x400')
+
+    leaveForm = tkinter.Label(lftk, text='Leave Form')
+    leaveForm.pack()
+
+    vacationLeave = ttk.Radiobutton(lftk, text='Vacation Leave', value=1)
+    vacationLeave.pack()
+    sickLeave = ttk.Radiobutton(lftk, text='Sick Leave', value=2)
+    sickLeave.pack()
+    companyLeave = ttk.Radiobutton(lftk, text='Company Leave', value=3)
+    companyLeave.pack()
+
+    dateofLeave = tkinter.Label(lftk, text='Date of Leave')
+    dateofLeave.pack()
+    entry1 = tkinter.Entry(lftk)
+    entry1.pack()
+    startDate = tkinter.Label(lftk, text='Start Date')
+    startDate.pack()
+    entry2 = tkinter.Entry(lftk)
+    entry2.pack()
+    endDate = tkinter.Label(lftk, text='End Date')
+    endDate.pack()
+    submit = tkinter.Button(lftk, text='Submit')
+    submit.pack()    
+
+#window to admin access
+def adminWindow():
+    ad_window = tkinter.Toplevel(mastertk)
+    ad_window.title("Admin Access")
+    ad_window.geometry("650x200")
+    mastertk.withdraw()
+
+    label = tkinter.Label(ad_window, text="Welcome Admin!", width=30, height=2)
+    label.grid(row=0, column=0, columnspan=2)
+    label.config(font=('Times 25',25))
+
+    tf = tkinter.Entry(ad_window, show="*")
+    tf.grid(row=1, column=0, columnspan=2, padx=20, pady=10)
+
+    #log in function
+    def ad_login():
+        password = tf.get()
+
+        if password == "admin123":
+            message = "Login Successful"
+            ad_window.destroy(), mastertk.withdraw() #mawawala previous window para d mag stack
+            adminui()
+        else:
+            message = "Wrong password, please try again"
+            tf.delete(0, tkinter.END)
+            label_result.config(text=message)
+
+    btn = tkinter.Button(ad_window, text="Log In", command=ad_login)
+    btn.grid(row=1, column=1, padx=10)
+
+    def goback_login():
+        ad_window.destroy()
+        mastertk.deiconify()
+
+    login_back = tkinter.Button(ad_window, text="Back", command=goback_login)
+    login_back.grid(row=1, column=2, padx=10, columnspan=2)
+
+    label_result = tkinter.Label(ad_window, text="")
+    label_result.grid(row=2, column=0, columnspan=2)
+
+    def close_window():
+        confirmed = messagebox.askyesno("Exit", "Are you sure you want to close the application?")
+        if confirmed:
+            ad_window.destroy()
+            mastertk.destroy()
+
+    ad_window.protocol("WM_DELETE_WINDOW", close_window)
+
+    #grids in admin login window
+    ad_window.rowconfigure(0, weight=1)
+    ad_window.columnconfigure(0, weight=1)
+    ad_window.columnconfigure(1, weight=2)
+
+#admin window ui
+def adminui():
+    adwin = tkinter.Tk()
+    adwin.title("Admin Access")
+    adwin.geometry("600x200")
+
+    adwin_label=tkinter.Label(adwin, text = 'ADMIN ACCESS', width=30, height=2)
+    adwin_label.grid(row = 0, column = 0, columnspan = 3, sticky = 'nsew')
+    adwin_label.config(font=('Times 25', 25))
+
+    adwin_btn1=tkinter.Button(adwin, text="Time in Records", command=showtimein)
+    adwin_btn1.grid(row = 1, column = 0,  padx=10, pady=10)
+
+    adwin_btn2=tkinter.Button(adwin, text="Time out Records", command=showtimeout)
+    adwin_btn2.grid(row = 1, column = 1,  padx=10, pady=10)
+
+    adwin_btn3=tkinter.Button(adwin, text="Leave Records", command=showleave)
+    adwin_btn3.grid(row = 1, column = 2, padx=10, pady=10)
+
+    create_emp = tkinter.Button(adwin, text="Insert new employee", command=create_employee)
+    create_emp.grid(row = 2, column = 0, padx=10, pady=10)
+    
+    pips_emp = tkinter.Button(adwin, text="Employees", command=showemployees)
+    pips_emp.grid(row = 2, column = 1, padx= 10,pady=10)
+
+    del_emp = tkinter.Button(adwin, text="Remove employee record", command=bura_emp)
+    del_emp.grid(row = 2, column = 2, padx=10, pady=10)
+
+    def bckad ():
+        adwin.destroy()
+        mastertk.deiconify()
+    
+    back_adwin=tkinter.Button(adwin, text="Back", command=bckad)
+    back_adwin.grid(row = 3, column = 1, padx=10, pady=10)
+
+    def close_window():
+        confirmed = messagebox.askyesno("Exit", "Are you sure you want to close the application?")
+        if confirmed:
+            adwin.destroy()
+            mastertk.destroy()
+
+    adwin.protocol("WM_DELETE_WINDOW", close_window)
+
+    adwin.rowconfigure(1, weight=1)
+    adwin.rowconfigure(2, weight=1)
+    adwin.rowconfigure(3, weight=1)
+    adwin.columnconfigure(0, weight=1)
+    adwin.columnconfigure(1, weight=1)
+    adwin.columnconfigure(2, weight=1)
+
+
+def showtimein():
+    timerec = tkinter.Tk()
+    timerec.title("Time in Records")
+    timerec.geometry("600x200")
+
+    try:
+        con = mysql.connector.connect(host='localhost', port='3306', database='db_empdb', user='root', password='')
+        query = "SELECT * FROM tbl_timein"
+        tree=ttk.Treeview(timerec)
+        cur = con.cursor()
+        cur.execute(query)
+        rows=cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        tree["columns"] = columns
+        tree.heading("#0", text="Index")
+        for col in columns:
+            tree.heading(col, text=col)
+            tree.column(col, width=100, anchor="center")
+        for i, row in enumerate(rows):
+            tree.insert("", "end", text=str(i), values=row)
+        tree.pack(fill="both", expand=True)
+        con.commit()
+        cur.close()
+    except Error as err:
+        print("Access Failed! {}".format(err))
+    finally:
+        if con.is_connected():
+            con.close()
+            print("Connection Successful!")
+
+def showtimeout():
+    timerec = tkinter.Tk()
+    timerec.title("Time in Records")
+    timerec.geometry("600x200")
+
+    try:
+        con = mysql.connector.connect(host='localhost', port='3306', database='db_empdb', user='root', password='')
+        query = "SELECT * FROM tbl_timeout"
+        tree=ttk.Treeview(timerec)
+        cur = con.cursor()
+        cur.execute(query)
+        rows=cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        tree["columns"] = columns
+        tree.heading("#0", text="Index")
+        for col in columns:
+            tree.heading(col, text=col)
+            tree.column(col, width=100, anchor="center")
+        for i, row in enumerate(rows):
+            tree.insert("", "end", text=str(i), values=row)
+        tree.pack(fill="both", expand=True)
+        con.commit()
+        cur.close()
+    except Error as err:
+        print("Access Failed! {}".format(err))
+    finally:
+        if con.is_connected():
+            con.close()
+            print("Connection Successful!")
+
+def showleave():
+    timerec = tkinter.Tk()
+    timerec.title("Leave Records")
+    timerec.geometry("600x200")
+
+    try:
+        con = mysql.connector.connect(host='localhost', port='3306', database='db_empdb', user='root', password='')
+        query = "SELECT * FROM tbl_leave"
+        tree=ttk.Treeview(timerec)
+        cur = con.cursor()
+        cur.execute(query)
+        rows=cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        tree["columns"] = columns
+        tree.heading("#0", text="Index")
+        for col in columns:
+            tree.heading(col, text=col)
+            tree.column(col, width=100, anchor="center")
+        for i, row in enumerate(rows):
+            tree.insert("", "end", text=str(i), values=row)
+        tree.pack(fill="both", expand=True)
+        con.commit()
+        cur.close()
+    except Error as err:
+        print("Access Failed! {}".format(err))
+    finally:
+        if con.is_connected():
+            con.close()
+            print("Connection Successful!")
+
+def showemployees():
+    timerec = tkinter.Tk()
+    timerec.title("Employees")
+    timerec.geometry("600x200")
+
+    try:
+        con = mysql.connector.connect(host='localhost', port='3306', database='db_empdb', user='root', password='')
+        query = "SELECT * FROM tbl_employee"
+        tree=ttk.Treeview(timerec)
+        cur = con.cursor()
+        cur.execute(query)
+        rows=cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        tree["columns"] = columns
+        tree.heading("#0", text="Index")
+        for col in columns:
+            tree.heading(col, text=col)
+            tree.column(col, width=100, anchor="center")
+        for i, row in enumerate(rows):
+            tree.insert("", "end", text=str(i), values=row)
+        tree.pack(fill="both", expand=True)
+        con.commit()
+        cur.close()
+    except Error as err:
+        print("Access Failed! {}".format(err))
+    finally:
+        if con.is_connected():
+            con.close()
+            print("Connection Successful!")
+
+def create_employee():
+    cr_ui = tkinter.Tk()
+    cr_ui.title("Insert New Employee")
+    cr_ui.geometry("300x400")
+
+    def create_emp(value1, value2, value3, value4):
+        try:
+            con = mysql.connector.connect(host='localhost', port='3306', database='db_empdb', user='root', password='')
+            cursor = con.cursor()
+
+            queryv = "SELECT emp_id FROM tbl_employee WHERE emp_id = %s"
+            cursor.execute(queryv, (value1,))
+            result = cursor.fetchone()
+            if result:
+                messagebox.showerror("Failed", "Employee ID already in the database!")
+            else:
+                query = "INSERT INTO tbl_employee (emp_id, first_name, last_name, gender) VALUES (%s, %s, %s, %s)"
+                cursor.execute(query, (value1, value2, value3, value4))
+                con.commit()
+                messagebox.showinfo("Success", "Employee inserted successfully!")
+
+        except mysql.connector.Error as err:
+            print("Access Failed! {}".format(err))
+        finally:
+            if con.is_connected():
+                con.close()
+                print("Connection Closed.")
+
+    def in_emp():
+        value1 = empid_Entry.get()
+        value2 = fname_Entry.get()
+        value3 = lname_Entry.get()
+        value4 = gend_Entry.get()
+        create_emp(value1, value2, value3, value4)
+    
+    tkinter.Label(cr_ui,text="Employee ID").pack()
+    empid_Entry = tkinter.Entry(cr_ui)
+    empid_Entry .pack()
+    tkinter.Label(cr_ui,text="Employee First Name").pack()
+    fname_Entry = tkinter.Entry(cr_ui)
+    fname_Entry.pack()
+    tkinter.Label(cr_ui,text="Employee Last Name").pack()
+    lname_Entry = tkinter.Entry(cr_ui)
+    lname_Entry.pack()
+    tkinter.Label(cr_ui,text="Employee Gender").pack()
+    gend_Entry = tkinter.Entry(cr_ui)
+    gend_Entry.pack()
+
+    button_pogi = tkinter.Button(cr_ui, text="Submit", command=in_emp)
+    button_pogi.pack()
+
+def bura_emp():
+    del_ui = tkinter.Tk()
+    del_ui.title("Insert New Employee")
+    del_ui.geometry("300x400")
+
+    def burahin(emp_id):
+        try:
+            con = mysql.connector.connect(host='localhost', port='3306', database='db_empdb', user='root', password='')
+            cursor = con.cursor()
+
+            queryv = "SELECT emp_id FROM tbl_employee WHERE emp_id = %s"
+            cursor.execute(queryv, (emp_id,))
+            result = cursor.fetchone()
+            if result:
+                query1 = "DELETE FROM tbl_employee WHERE emp_id = %s"
+                cursor.execute(query1, (emp_id,))
+                con.commit()
+
+                query2 = "DELETE FROM tbl_timein WHERE emp_id = %s"
+                cursor.execute(query2, (emp_id,))
+                con.commit()
+
+                query3 = "DELETE FROM tbl_timeout WHERE emp_id = %s"
+                cursor.execute(query3, (emp_id,))
+                con.commit()
+
+               # query4 = "DELETE FROM tbl_leave WHERE emp_id = %s"
+              #  cursor.execute(query4, (emp_id,))
+              #  con.commit()
+
+                messagebox.showinfo("Success", "Employee and employee records deleted!")
+            else:
+                messagebox.showerror("Failed", "Employee ID not found!")
+
+        except Error as err:
+            print("Deletion Failed! {}".format(err))
+        finally:
+            if con.is_connected():
+                con.close()
+                print("Connection Closed.")
+
+    def delete():
+        emp_id = empid_del.get()
+        burahin(emp_id)
+
+    label = tkinter.Label(del_ui, text="Enter the employee ID to delete").pack()
+    empid_del = tkinter.Entry(del_ui)
+    empid_del.pack()
+
+    del_b = tkinter.Button(del_ui, text="Confirm", command=delete).pack()
+
+
+welcome=tkinter.Label(mastertk, text = 'WELCOME', width=30, height=2)
+welcome.grid(row = 0, column = 1, columnspan = 3, sticky = 'nsew')
+welcome.config(font=('Times 25',25))
+
+admin=tkinter.Button(mastertk, text="ADMIN", command=adminWindow)
+admin.grid(row = 1, column = 1,  sticky = 'nsew')
+
+employee=tkinter.Button(mastertk, text="EMPLOYEE", command=employeeWindow)
+employee.grid(row = 1, column = 3, sticky = 'nsew')
+
+def close_window():
+        confirmed = messagebox.askyesno("Exit", "Are you sure you want to close the application?")
+        if confirmed:
+            mastertk.destroy()
+
+mastertk.protocol("WM_DELETE_WINDOW", close_window)
+
+mastertk.mainloop()
