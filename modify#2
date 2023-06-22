@@ -47,14 +47,18 @@ def employeeWindow():
 
             if result:
                 messagebox.showinfo("Success", "Timed in successfully!")
+                empEntry.delete(0, tkinter.END)
             else:
                 messagebox.showerror("Failed", "Employee ID not found!")
+                empEntry.delete(0, tkinter.END)
 
         except Error as err:
             if err.errno == mysql.connector.errorcode.ER_NO_SUCH_TABLE:
                 messagebox.showerror("Failed", "Employee ID not found!")
+                empEntry.delete(0, tkinter.END)
             else:
                 messagebox.showerror("Failed", "Invalid Employee ID! Please enter a numeric ID.")
+                empEntry.delete(0, tkinter.END)
         finally:
                 if con.is_connected():
                     con.close()
@@ -85,14 +89,18 @@ def employeeWindow():
 
             if result:
                 messagebox.showinfo("Success", "Timed out successfully!")
+                empEntry.delete(0, tkinter.END)
             else:
                 messagebox.showerror("Failed", "Employee ID not found!")
+                empEntry.delete(0, tkinter.END)
 
         except Error as err:
             if err.errno == mysql.connector.errorcode.ER_NO_SUCH_TABLE:
                 messagebox.showerror("Failed", "Employee ID not found!")
+                empEntry.delete(0, tkinter.END)
             else:
                 messagebox.showerror("Failed", "Invalid Employee ID! Please enter a numeric ID.")
+                empEntry.delete(0, tkinter.END)
         finally:
                 if con.is_connected():
                     con.close()
@@ -400,12 +408,13 @@ def create_employee():
             result = cursor.fetchone()
             if result:
                 messagebox.showerror("Failed", "Employee ID already in the database!")
+                create_emp.delete(0, tkinter.END)
             else:
                 query = "INSERT INTO tbl_employee (emp_id, first_name, last_name, gender) VALUES (%s, %s, %s, %s)"
                 cursor.execute(query, (value1, value2, value3, value4))
                 con.commit()
                 messagebox.showinfo("Success", "Employee inserted successfully!")
-
+                create_emp.delete(0, tkinter.END)
         except mysql.connector.Error as err:
             print("Access Failed! {}".format(err))
         finally:
@@ -467,8 +476,10 @@ def bura_emp():
               #  con.commit()
 
                 messagebox.showinfo("Success", "Employee and employee records deleted!")
+                empid_del.delete(0, tkinter.END)
             else:
                 messagebox.showerror("Failed", "Employee ID not found!")
+                empid_del.delete(0, tkinter.END)
 
         except Error as err:
             print("Deletion Failed! {}".format(err))
