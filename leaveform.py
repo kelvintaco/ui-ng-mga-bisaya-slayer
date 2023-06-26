@@ -7,6 +7,7 @@ import subprocess
 import sys
 
 def handle_confirmation():
+    global empid
     empid = entryid.get()
     selected_value = radio_var.get()
     start_date = cal.selection_get().strftime('%Y-%m-%d')
@@ -27,19 +28,72 @@ def insert_data(empid, value, start_date, end_date):
         cursor.execute(queryv, (empid,))
         result = cursor.fetchone()
         if result:
-            query = "INSERT INTO tbl_leave (emp_id, leave_type, start_date, end_date) VALUES (%s, %s, %s, %s)"
-            cursor.execute(query, (empid, value, start_date, end_date))
-            conn.commit()
-            
-            messagebox.showinfo("Success", "Data inserted successfully!")
+            query0 = "SELECT emp_id FROM tbl_leave WHERE emp_id = %s AND start_date <= %s AND end_date >= %s"
+            cursor.execute(query0, (empid, start_date, end_date))
+            result1 = cursor.fetchone()
+            if result1:
+                messagebox.showerror("Leave Conflict", f"Employee is already on leave from {get_leave_start_date()} to. {get_leave_end_date()}")
+            else:
+                while cursor.nextset():
+                    pass
+                query = "INSERT INTO tbl_leave (emp_id, leave_type, start_date, end_date) VALUES (%s, %s, %s, %s)"
+                cursor.execute(query, (empid, value, start_date, end_date))
+                messagebox.showinfo("Success", "Inserted leave successfully!") 
+                conn.commit()
+                cursor.close()
         else:
             messagebox.showerror("Failed", "Employee ID not found!")
+        
     except mysql.connector.Error as err:
         print("Error inserting data:", err)
     finally:
         if conn.is_connected():
-            cursor.close()
             conn.close()
+
+def get_leave_end_date():
+    try:
+        con = mysql.connector.connect(host='localhost', port='3306', database='db_empdb', user='root', password='')
+        cursor = con.cursor()
+
+        query = "SELECT end_date FROM tbl_leave WHERE emp_id = %s"
+        cursor.execute(query, (empid,))
+        result = cursor.fetchone()
+        if result:
+            end_date = result[0]
+            return end_date
+        else:
+            return None
+
+    except mysql.connector.Error as err:
+        print("Error: {}".format(err))
+
+    finally:
+        if con.is_connected():
+            cursor.close()
+            con.close()
+
+def get_leave_start_date():
+    try:
+        con = mysql.connector.connect(host='localhost', port='3306', database='db_empdb', user='root', password='')
+        cursor = con.cursor()
+
+        query = "SELECT start_date FROM tbl_leave WHERE emp_id = %s"
+        cursor.execute(query, (empid,))
+        result = cursor.fetchone()
+        if result:
+            start_date = result[0]
+            return start_date
+        else:
+            return None
+
+    except mysql.connector.Error as err:
+        print("Error: {}".format(err))
+
+    finally:
+        if con.is_connected():
+            cursor.close()
+            con.close()
+    
 
 lftk = tk.Tk()
 lftk.title('Leave Form')
@@ -73,7 +127,7 @@ cal1.pack()
 confirmation_button = tk.Button(lftk, text="Confirm", command=handle_confirmation)
 confirmation_button.pack()
 def tawag():
-    command = ['python', 'C:/Users/Kenneth/Desktop/FOR_SYSTEM/main.py']
+    command = ['python', 'C:/Users/Booster/Documents/python/OOP_project/main.py']
     subprocess.run(command)
 
 def goback():
