@@ -2,6 +2,7 @@ from tkinter import messagebox, Entry, Button, Toplevel
 from customtkinter import CTkButton, CTkLabel, CTkFont
 from employee_window import EmployeeWindow
 from admin_window import AdminWindow
+from admin_login import AdminLogin
 
 class MainWindow:
     def __init__(self, master):
@@ -29,6 +30,14 @@ class MainWindow:
         emp_window = EmployeeWindow(empwind, self.master)
 
     def admin_window(self):
-        ad_window = Toplevel(self.master)
-        admin_window = AdminWindow(ad_window, self.master)
+        adlog_wind = Toplevel(self.master)
+        admin_login = AdminLogin(adlog_wind, self.master)
+
+    def close_window(self):
+        confirmed = messagebox.askyesno("Exit", "Are you sure you want to close the application?")
+        if confirmed:
+            self.master.destroy()
+            self.main_window.destroy()
+
+        self.master.protocol("WM_DELETE_WINDOW", self.master.close_window)
 
